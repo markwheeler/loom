@@ -905,6 +905,7 @@ function init()
       grid_device:all(0)
       grid_device:refresh()
       grid_device = grid.connect(value)
+      grid_dirty = true
     end}
   
   params:add{type = "option", id = "output", name = "Output", options = options.OUTPUT, action = all_notes_kill}
