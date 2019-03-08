@@ -7,16 +7,16 @@
 -- to add a trigger or note.
 -- Three keys clear a row/col.
 --
--- ENC1/KEY2 : Change page
+-- E1/K2 : Change page
 --
 -- PAGE 1:
---  ENC2 : BPM
---  ENC3 : Add/Remove
---  KEY3 : Play/Pause
+--  E2 : BPM
+--  E3 : Add/Remove
+--  K3 : Play/Pause
 -- PAGE 2:
---  ENC2 : Root note/Select
---  ENC3 : Scale type/Note edit
---  KEY3 : Scale/Custom
+--  E2 : Root note/Select
+--  E3 : Scale type/Note edit
+--  K3 : Scale/Custom
 -- PAGE 3:
 --  Load/Save/Delete
 --
@@ -25,10 +25,10 @@
 -- Code Mark Eats
 --
 
-local MusicUtil = require "mark_eats/musicutil"
-local UI = require "mark_eats/ui"
+local MusicUtil = require "musicutil"
+local UI = require "ui"
 local BeatClock = require "beatclock"
-local MollyThePoly = require "mark_eats/mollythepoly"
+local MollyThePoly = require "mollythepoly"
 
 engine.name = "MollyThePoly"
 
@@ -217,7 +217,7 @@ local function note_on(note_num)
   
   -- MIDI out
   if (params:get("output") == 2 or params:get("output") == 3) then
-    midi_out_device.note_on(note_num, note_midi_vel, midi_out_channel)
+    midi_out_device:note_on(note_num, note_midi_vel, midi_out_channel)
   end
   
 end
@@ -233,7 +233,7 @@ local function note_off(note_num)
   
   -- MIDI out
   if (params:get("output") == 2 or params:get("output") == 3) then
-    midi_out_device.note_off(note_num, nil, midi_out_channel)
+    midi_out_device:note_off(note_num, nil, midi_out_channel)
   end
   
 end
@@ -246,7 +246,7 @@ local function all_notes_kill()
   -- MIDI out
   if (params:get("output") == 2 or params:get("output") == 3) then
     for _, a in pairs(active_notes) do
-      midi_out_device.note_off(a, 96, midi_out_channel)
+      midi_out_device:note_off(a, 96, midi_out_channel)
     end
   end
   
@@ -412,8 +412,8 @@ end
 local function advance_step()
   
   if grid_device then
-    grid_w = grid_device.cols()
-    grid_h = grid_device.rows()
+    grid_w = grid_device.cols
+    grid_h = grid_device.rows
     if grid_w ~= 8 and grid_w ~= 16 then grid_w = 16 end
     if grid_h ~= 8 and grid_h ~= 16 then grid_h = 8 end
   end
@@ -747,7 +747,7 @@ end
 
 
 -- Grid event
-local function grid_event(x, y, z)
+local function grid_key(x, y, z)
   
   if z == 1 then
     
@@ -853,7 +853,7 @@ function init()
   init_scale()
   
   grid_device = grid.connect(1)
-  grid_device.event = grid_event
+  grid_device.key = grid_key
   
   beat_clock = BeatClock.new()
   
@@ -879,8 +879,8 @@ function init()
   midi_out_device = midi.connect(1)
   midi_out_device.event = function() end
   
-  local screen_refresh_metro = metro.alloc()
-  screen_refresh_metro.callback = function()
+  local screen_refresh_metro = metro.init()
+  screen_refresh_metro.event = function()
     screen_update()
     if screen_dirty then
       screen_dirty = false
@@ -888,10 +888,10 @@ function init()
     end
   end
   
-  local grid_redraw_metro = metro.alloc()
-  grid_redraw_metro.callback = function()
+  local grid_redraw_metro = metro.init()
+  grid_redraw_metro.event = function()
     grid_update()
-    if grid_dirty and grid_device.attached() then
+    if grid_dirty and grid_device.device then
       grid_dirty = false
       grid_redraw()
     end
@@ -902,16 +902,16 @@ function init()
   
   params:add{type = "number", id = "grid_device", name = "Grid Device", min = 1, max = 4, default = 1,
     action = function(value)
-      grid_device.all(0)
-      grid_device.refresh()
-      grid_device:reconnect(value)
+      grid_device:all(0)
+      grid_device:refresh()
+      grid_device = grid.connect(value)
     end}
   
   params:add{type = "option", id = "output", name = "Output", options = options.OUTPUT, action = all_notes_kill}
   
   params:add{type = "number", id = "midi_out_device", name = "MIDI Out Device", min = 1, max = 4, default = 1,
     action = function(value)
-      midi_out_device:reconnect(value)
+      midi_out_device = midi.connect(value)
     end}
   
   params:add{type = "number", id = "midi_out_channel", name = "MIDI Out Channel", min = 1, max = 16, default = 1,
@@ -927,7 +927,7 @@ function init()
   
   params:add{type = "number", id = "clock_midi_in_device", name = "Clock MIDI In Device", min = 1, max = 4, default = 1,
     action = function(value)
-      midi_in_device:reconnect(value)
+      midi_in_device = midi.connect(value)
     end}
   
   params:add{type = "option", id = "clock_out", name = "Clock Out", options = {"Off", "On"}, default = beat_clock.send or 2 and 1,
@@ -1063,10 +1063,10 @@ function grid_redraw()
   
   for x = 1, grid_w do
     for y = 1, grid_h do
-      grid_device.led(x, y, grid_leds[x][y])
+      grid_device:led(x, y, grid_leds[x][y])
     end
   end
-  grid_device.refresh()
+  grid_device:refresh()
   
 end
 
