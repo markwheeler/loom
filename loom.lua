@@ -20,7 +20,7 @@
 -- PAGE 3:
 --  Load/Save/Delete
 --
--- v1.0.4
+-- v1.0.5
 -- Concept Jay Gilligan
 -- Code Mark Eats
 --
@@ -28,7 +28,7 @@
 local MusicUtil = require "musicutil"
 local UI = require "ui"
 local BeatClock = require "beatclock"
-local MollyThePoly = require "mollythepoly"
+local MollyThePoly = require "molly_the_poly/lib/molly_the_poly_engine"
 
 engine.name = "MollyThePoly"
 
@@ -37,8 +37,7 @@ options.OUTPUT = {"Audio", "MIDI", "Audio + MIDI"}
 options.STEP_LENGTH_NAMES = {"1 bar", "1/2", "1/3", "1/4", "1/6", "1/8", "1/12", "1/16", "1/24", "1/32", "1/48", "1/64"}
 options.STEP_LENGTH_DIVIDERS = {1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64}
 
-local DATA_FOLDER_PATH = data_dir .. "mark_eats/"
-local DATA_FILE_PATH = DATA_FOLDER_PATH .. "loom.data"
+local DATA_FILE_PATH = _path.data .. "loom/loom.data"
 
 local SCREEN_FRAMERATE = 15
 local screen_dirty = true
@@ -128,8 +127,6 @@ local function read_data()
         print("Unrecognized data, version " .. disk_data.version)
       end
     end
-  else
-    os.execute("mkdir " .. DATA_FOLDER_PATH)
   end
   update_save_slot_list()
 end
