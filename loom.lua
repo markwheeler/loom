@@ -829,6 +829,14 @@ local function grid_key(x, y, z)
   grid_dirty = true
 end
 
+-- MIDI event
+local function midi_clock_event(data)
+  beat_clock:process_midi(data)
+  if not beat_clock.playing and playback_icon.status == 1 then
+    screen_dirty = true
+  end
+end
+
 
 function init()
   
@@ -866,15 +874,9 @@ function init()
   end
   
   midi_in_device = midi.connect(1)
-  midi_in_device.event = function(data)
-    beat_clock:process_midi(data)
-    if not beat_clock.playing and playback_icon.status == 1 then
-      screen_dirty = true
-    end
-  end
+  midi_in_device.event = midi_clock_event
   
   midi_out_device = midi.connect(1)
-  midi_out_device.event = function() end
   
   local screen_refresh_metro = metro.init()
   screen_refresh_metro.event = function()
@@ -901,7 +903,9 @@ function init()
     action = function(value)
       grid_device:all(0)
       grid_device:refresh()
+      grid_device.key = nil
       grid_device = grid.connect(value)
+      grid_device.key = grid_key
       grid_dirty = true
     end}
   
@@ -923,9 +927,11 @@ function init()
       beat_clock:clock_source_change(value)
     end}
   
-  params:add{type = "number", id = "clock_midi_in_device", name = "Clock MIDI In Device", min = 1, max = 4, default = 1,
+  params:add{type = "number", id = "midi_clock_in_device", name = "Clock MIDI In Device", min = 1, max = 4, default = 1,
     action = function(value)
+      midi_in_device.event = nil
       midi_in_device = midi.connect(value)
+      midi_in_device.event = midi_clock_event
     end}
   
   params:add{type = "option", id = "clock_out", name = "Clock Out", options = {"Off", "On"}, default = beat_clock.send or 2 and 1,
