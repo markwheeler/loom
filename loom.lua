@@ -1,4 +1,6 @@
 -- Loom
+-- 1.0.5 @markeats
+-- llllllll.co/t/21091
 --
 -- Pattern weaver for grids.
 --
@@ -20,9 +22,7 @@
 -- PAGE 3:
 --  Load/Save/Delete
 --
--- v1.0.5
 -- Concept Jay Gilligan
--- Code Mark Eats
 --
 
 local MusicUtil = require "musicutil"
