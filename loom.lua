@@ -1,6 +1,6 @@
 -- Loom
 -- 1.0.5 @markeats
--- llllllll.co/t/21091
+-- llllllll.co/t/loom
 --
 -- Pattern weaver for grids.
 --
