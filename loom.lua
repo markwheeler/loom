@@ -1,5 +1,5 @@
 -- Loom
--- 1.0.5 @markeats
+-- 1.0.6 @markeats
 -- llllllll.co/t/loom
 --
 -- Pattern weaver for grids.
@@ -1181,12 +1181,7 @@ function redraw()
           end
         end
         
-        local underline_length = 10
-        if string.len(scale_note_names[i]) > 3 then
-          underline_length = 18
-        elseif string.len(scale_note_names[i]) > 2 then
-          underline_length = 16
-        end
+        local underline_length = _norns.screen_extents(scale_note_names[i]) + 1
         if custom_scale and i == scale_edit_id then
           screen.level(15)
           screen.move(x - 1, y + 2.5)
