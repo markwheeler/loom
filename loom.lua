@@ -1,5 +1,5 @@
 -- Loom
--- 1.0.6 @markeats
+-- 1.0.7 @markeats
 -- llllllll.co/t/loom
 --
 -- Pattern weaver for grids.
@@ -9,12 +9,13 @@
 -- to add a trigger or note.
 -- Three keys clear a row/col.
 --
--- E1/K2 : Change page
+-- E1 : Change page
+-- K2 : Play/Pause
 --
 -- PAGE 1:
 --  E2 : BPM
 --  E3 : Add/Remove
---  K3 : Play/Pause
+--  K3 : New sound
 -- PAGE 2:
 --  E2 : Root note/Select
 --  E3 : Scale type/Note edit
@@ -677,8 +678,14 @@ function key(n, z)
         confirm_function = nil
       
       else
-        pages:set_index_delta(1, true)
-        save_menu_list:set_index(1)
+        if not beat_clock.external then
+          if beat_clock.playing then
+            beat_clock:stop()
+          else
+            beat_clock:start()
+          end
+        end
+        
       end
     
     -- Key 3
@@ -693,13 +700,7 @@ function key(n, z)
       
         -- Time
         if pages.index == 1 then
-          if not beat_clock.external then
-            if beat_clock.playing then
-              beat_clock:stop()
-            else
-              beat_clock:start()
-            end
-          end
+          MollyThePoly.randomize_params("lead")
         
         -- Pitch
         elseif pages.index == 2 then
@@ -899,6 +900,8 @@ function init()
   
   -- Add params
   
+  params:add_separator("In/Out")
+  
   params:add{type = "number", id = "grid_device", name = "Grid Device", min = 1, max = 4, default = 1,
     action = function(value)
       grid_device:all(0)
@@ -940,7 +943,7 @@ function init()
       else beat_clock.send = true end
     end}
   
-  params:add_separator()
+  params:add_separator("Fabric")
   
   params:add{type = "number", id = "bpm", name = "BPM", min = 1, max = 240, default = beat_clock.bpm,
     action = function(value)
@@ -1181,7 +1184,7 @@ function redraw()
           end
         end
         
-        local underline_length = _norns.screen_extents(scale_note_names[i]) + 1
+        local underline_length = _norns.screen_text_extents(scale_note_names[i]) + 1
         if custom_scale and i == scale_edit_id then
           screen.level(15)
           screen.move(x - 1, y + 2.5)
