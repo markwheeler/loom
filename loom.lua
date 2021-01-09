@@ -34,7 +34,7 @@ local MollyThePoly = require "molly_the_poly/lib/molly_the_poly_engine"
 engine.name = "MollyThePoly"
 
 local options = {}
-options.OUTPUT = {"Audio", "MIDI", "Audio + MIDI"}
+options.OUTPUT = {"Audio", "MIDI", "Audio + MIDI", "crow out 1+2", "crow ii JF"}
 options.STEP_LENGTH_NAMES = {"1 bar", "1/2", "1/3", "1/4", "1/6", "1/8", "1/12", "1/16", "1/24", "1/32", "1/48", "1/64"}
 options.STEP_LENGTH_DIVIDERS = {1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64}
 
@@ -218,6 +218,14 @@ local function note_on(note_num)
     midi_out_device:note_on(note_num, note_midi_vel, midi_out_channel)
   end
   
+  -- crow 1+2 out
+  if params:get("output") == 4 then
+    crow.output[1].volts = (note_num-60)/12
+    crow.output[2].execute()
+  -- crow ii JF out
+  elseif params:get("output") == 5 then
+    crow.ii.jf.play_note((note_num-60)/12,5)
+  end
 end
 
 local function note_off(note_num)
@@ -912,7 +920,15 @@ function init()
       grid_dirty = true
     end}
   
-  params:add{type = "option", id = "output", name = "Output", options = options.OUTPUT, action = all_notes_kill}
+  params:add{type = "option", id = "output", name = "Output", options = options.OUTPUT, 
+    action = function(value)
+      all_notes_kill()
+      if value == 4 then crow.output[2].action = "{to(5,0),to(0,0.25)}"
+      elseif value == 5 then
+        crow.ii.pullup(true)
+        crow.ii.jf.mode(1)
+      end
+    end}
   
   params:add{type = "number", id = "midi_out_device", name = "MIDI Out Device", min = 1, max = 4, default = 1,
     action = function(value)
